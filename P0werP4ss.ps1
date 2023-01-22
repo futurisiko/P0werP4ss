@@ -162,9 +162,9 @@ if ($Modality -eq 'Encrypt') {
     $TextString = Read-Host "Insert the string to encode"
     $Quick = ConvertFrom-SecureString $Password -AsPlainText
     AESEncryption -Mode $Modality -Key $Quick -Text $TextString >> .\P0werP4ss.txt
+    AESEncryption -Mode $Modality -Key $Quick -Text $TextString >> .\P0werP4ss.txt.back
     $Quick = ""
     Write-Host "`n-----------------`nEncrypted string added to P0werP4ss.txt !`n-----------------"
-    copy .\P0werP4ss.txt .\P0werP4ss.txt.back
     exit 0
 }
 
