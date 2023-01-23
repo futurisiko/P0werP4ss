@@ -171,10 +171,9 @@ if ($Modality -eq 'Encrypt') {
 
 ### Decryption execution ###
 if ($Modality -eq 'Decrypt') {
-    $file = Get-Content -Path '.\P0werP4ss.txt'
     $Quick = ConvertFrom-SecureString $Password -AsPlainText
     Write-Host "`n-----------------`nDecrypted Output:`n"
-    for ($i=0; $i -lt $file.count; $i++) { AESEncryption -Mode $Modality -Key $Quick -Text $file[$i] }
+    foreach ($line in Get-Content .\P0werP4ss.txt) { AESEncryption -Mode $Modality -Key $Quick -Text $line }
     $Quick = ""
     Write-Host "-----------------"
     exit 0
