@@ -1,5 +1,5 @@
 # PowerShell 7+
-
+#
 #	#################
 #	# P0werP4ss.ps1 #
 #	#################
@@ -61,6 +61,7 @@ $SaltSize            = 16   # 128 bit
 $IvSize              = 16   # AES block size
 $KeySize             = 32   # 256 bit
 $RecordMagic         = [System.Text.Encoding]::ASCII.GetBytes('PPS1')
+$ClearDecryptedOutputAfterSeconds = 30
 
 
 ### Utility Functions ###
@@ -127,6 +128,32 @@ function Test-RecordMagic {
     return $true
 }
 
+function Clear-TerminalAfterDelay {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(0, 3600)]
+        [int]$Seconds
+    )
+
+    try {
+        if ($Seconds -gt 0) {
+            Start-Sleep -Seconds $Seconds
+        }
+    }
+    finally {
+        try {
+            # Clear screen + scrollback buffer on terminals that support ANSI escape sequences.
+            $esc = [char]27
+            [Console]::Write("${esc}[3J${esc}[2J${esc}[H")
+        }
+        catch {
+            # Fallback handled by Clear-Host below.
+        }
+
+        Clear-Host
+    }
+}
 
 ### Encrypt/Decrypt Function ###
 function AESEncryption {
@@ -319,20 +346,33 @@ try {
     }
 
     if ($Modality -eq 'Decrypt') {
-        Write-Host "`n-----------------`nDecrypted Output:`n"
-
-        foreach ($line in Get-Content .\P0werP4ss.txt) {
-            if ([string]::IsNullOrWhiteSpace($line)) {
-                continue
+        $DecryptedOutputWasPrinted = $false
+    
+        try {
+            Write-Host "`n-----------------`nDecrypted Output:`n"
+    
+            foreach ($line in Get-Content .\P0werP4ss.txt) {
+                if ([string]::IsNullOrWhiteSpace($line)) {
+                    continue
+                }
+    
+                AESEncryption -Mode $Modality -Key $PasswordBytes -Text $line
+                $DecryptedOutputWasPrinted = $true
             }
 
-            AESEncryption -Mode $Modality -Key $PasswordBytes -Text $line
+            Write-Host "-----------------"
+        }
+        finally {
+            if ($DecryptedOutputWasPrinted) {
+                Clear-TerminalAfterDelay -Seconds $ClearDecryptedOutputAfterSeconds
+            }
         }
 
-        Write-Host "-----------------"
         exit 0
     }
+
 }
+
 finally {
     Clear-ByteArray -Bytes $PasswordBytes
 }
