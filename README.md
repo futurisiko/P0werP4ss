@@ -48,3 +48,7 @@ Decrypted Output:
 Sup3rS3cur3P4ss
 -----------------
 ```
+
+## UPDATE
+- Implemented better encryption
+- Implemented auto terminal cleanup after 30 seconds to avoid forgetting to clean it after decription
